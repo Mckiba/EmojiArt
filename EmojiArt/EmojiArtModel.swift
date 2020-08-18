@@ -9,7 +9,7 @@
 import Foundation
 
 
-struct EmojiArt: Codable {
+struct EmojiArtModel: Codable {
     
     var backgroundURL : URL?
     var emojis = [Emoji]()
@@ -36,7 +36,7 @@ struct EmojiArt: Codable {
      }
      
      init?(json: Data?) {
-         if json != nil, let newEmojiArt = try? JSONDecoder().decode(EmojiArt.self, from: json!) {
+         if json != nil, let newEmojiArt = try? JSONDecoder().decode(EmojiArtModel.self, from: json!) {
              self = newEmojiArt
          } else {
              return nil
@@ -51,4 +51,8 @@ struct EmojiArt: Codable {
         uniqueEmojiId += 1
         emojis.append(Emoji(text: text, x: x, y: y, size: size, id: uniqueEmojiId))
     }
+    
+    mutating func deleteEmoji(_ index: Int) {
+          emojis.remove(at : index)
+      }
 }
