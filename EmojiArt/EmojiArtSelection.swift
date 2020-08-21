@@ -41,15 +41,30 @@ struct EmojiArtSelection: View {
     private func moveAllSelectedEmojis(by offset : CGSize){
         // all emojis that are selected
         self.document.selection.forEach{ selectedEmoji in
-            // move to new position
             self.document.moveEmoji(selectedEmoji, by : offset)
             
-            if document.emojis.firstIndex(matching: selectedEmoji) != nil{
-                
+            if let index = document.emojis.firstIndex(matching: selectedEmoji){
+                if emojiIsOutsideDocumentArea(index : index)  {
+                    // remove from model
+                    document.deleteEmoji(selectedEmoji)
+                    document.selection.toggleMatching(toggle: selectedEmoji)
+                    
+                }
             }
         }
+        
+        
     }
     
+    // Check if emoji has been moved outside of the document background
+    private func emojiIsOutsideDocumentArea(index : Int) -> Bool {
+        let maxWidth = Int(size.width / self.zoomScale / 2)
+        let maxHeight = Int(size.height / self.zoomScale / 2)
+        let margin = 6
+        return  (abs( document.emojis[index].x) + margin) >= maxWidth ||
+            (abs(document.emojis[index].y) + margin) >= maxHeight
+        
+    }
     
 }
 
