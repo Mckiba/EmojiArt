@@ -9,22 +9,40 @@
 import SwiftUI
 import Combine
 
-class EmojiArtDocument: ObservableObject {
+class EmojiArtDocument: ObservableObject ,Hashable ,Identifiable {
     
+    @EnvironmentObject var document: EmojiArtDocument
+
+    static func == (lhs: EmojiArtDocument, rhs: EmojiArtDocument) -> Bool {
+         lhs.id == rhs.id
+    }
+    
+    let id: UUID
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
     
     static let palette: String = "☹️😒😖🤗😶😨"
     
-    @Published private var emojiArt: EmojiArtModel /* {
-     willSet{
-     objectWillChange.send()
-     }
-     didSet{
-     UserDefaults.standard.set(emojiArt.json, forKey: EmojiArtDocument.untitled)
-     //print("json = \(emojiArt.json?.utf8 ?? "nill")")
-     }
-     }*/
+    @Published private var emojiArt: EmojiArtModel
+    
+    @Published  var steadyStateZoomScale: CGFloat = 1.0
+    @Published  var steadyStatePanOffset: CGSize = .zero
     
     private var autosaveCancellable: AnyCancellable?
+    
+    
+    init(id : UUID? = nil) {
+        self.id = id ?? UUID()
+        
+        let defaultsKey = "EmojiArtDocument.\(self.id.uuidString)"
+        emojiArt = EmojiArtModel(json: UserDefaults.standard.data(forKey: defaultsKey)) ?? EmojiArtModel()
+        autosaveCancellable = $emojiArt.sink { emojiArt in
+            UserDefaults.standard.set(emojiArt.json, forKey: defaultsKey)
+        }
+        fetchBackgroundImageData()
+    }
     
     
     @Published var selection  = Set<EmojiArtModel.Emoji>()
@@ -37,17 +55,6 @@ class EmojiArtDocument: ObservableObject {
     @Published private(set) var backgroundImage: UIImage?
     
     var emojis : [EmojiArtModel.Emoji] {emojiArt.emojis}
-    
-    init() {
-        
-        emojiArt = EmojiArtModel(json: UserDefaults.standard.data(forKey: EmojiArtDocument.untitled)) ?? EmojiArtModel()
-        autosaveCancellable = $emojiArt.sink {  emojiArt in
-            print("json = \(emojiArt.json?.utf8 ?? "nill")")
-            UserDefaults.standard.set(emojiArt.json, forKey: EmojiArtDocument.untitled)
-        }
-        fetchBackgroundImageData()
-        
-    }
     
     
     //Mark:  - Intent(s)

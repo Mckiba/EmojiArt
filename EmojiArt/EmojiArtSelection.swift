@@ -22,10 +22,7 @@ struct EmojiArtSelection: View {
                 // Tapping on an unselected emoji selects it.
                 self.document.selection.toggleMatching(toggle : self.emoji)
         }
-        .overlay(
-            RoundedRectangle(cornerRadius: 15)
-                .stroke(style: StrokeStyle(lineWidth:  self.document.selection.contains (matching : emoji) ? 4 : 0, dash: [15.0]))
-        )
+     
     }
     
     
